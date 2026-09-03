@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>Scanner Absensi Panitia</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+
+    .wrap {
+      width: min(100%, 520px);
+      margin: 0 auto;
+      padding: 18px 14px 30px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      margin: 0 0 16px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 7px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      height: 48px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 0 13px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #111827;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      height: 46px;
+      padding: 0 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #startBtn {
+      background: #111827;
+      color: #fff;
+    }
+
+    #stopBtn {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    #reader {
+      margin-top: 14px;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #111;
+      min-height: 90px;
+    }
+
+    #result {
+      margin-top: 14px;
+      border-radius: 14px;
+      padding: 15px;
+      line-height: 1.55;
+      font-size: 15px;
+      background: #f3f4f6;
+    }
+
+    #result.success { background: #dcfce7; color: #166534; }
+    #result.error { background: #fee2e2; color: #991b1b; }
+    #result.info { background: #e0f2fe; color: #075985; }
+    #result.warn { background: #fef3c7; color: #92400e; }
+
+    .small {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .hiddenFrame {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+      left: -10px;
+      top: -10px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>📷 Scanner Absensi</h1>
+      <p class="subtitle">
+        Masukkan PIN panitia, nyalakan kamera, lalu arahkan kamera ke QR peserta.
+      </p>
+
+      <label for="pin">PIN Panitia</label>
+      <input id="pin" type="password" inputmode="text" autocomplete="off" placeholder="Masukkan PIN panitia">
+
+      <div class="buttons">
+        <button id="startBtn" type="button">📷 Mulai Kamera</button>
+        <button id="stopBtn" type="button">⏹ Stop Kamera</button>
+      </div>
+
+      <div id="reader"></div>
+
+      <div id="result" class="info">
+        Siap. Tekan <b>Mulai Kamera</b> untuk memulai.
+      </div>
+
+      <p class="small">
+        Jika kamera tetap tidak bisa dibuka, pastikan halaman ini dibuka melalui HTTPS
+        dan izin kamera browser sudah diizinkan.
+      </p>
+    </section>
+  </main>
+
+  <iframe id="postFrame" name="postFrame" class="hiddenFrame" title="background"></iframe>
+
+<script>
+/* ============================================================
+ * GANTI URL DI BAWAH dengan URL Web App Apps Script Anda.
+ * Contoh:
+ * https://script.google.com/macros/s/AKfycbxxxxxxxx/exec
+ * ============================================================ */
+const API_URL = "https://script.google.com/macros/s/AKfycbxv1HihT6XEUNf6AXdChQasah8Ig3BPf5UatL7Yzp1sMaNUjBeKPkrc50h3S0Ym9VCbSA/execA";
+
+const pinInput = document.getElementById("pin");
+const resultBox = document.getElementById("result");
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+
+let scanner = null;
+let running = false;
+let processing = false;
+
+
+function show(message, type = "info") {
+  resultBox.className = type;
+  resultBox.innerHTML = message;
+}
+
+
+function esc(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function makeRequestId() {
+  if (window.crypto && crypto.randomUUID) {
+    return crypto.randomUUID().replace(/[^A-Za-z0-9_-]/g, "");
+  }
+
+  return (Date.now().toString(36) + Math.random().toString(36).slice(2) + Date.now().toString(36))
+    .replace(/[^A-Za-z0-9_-]/g, "")
+    .slice(0, 80);
+}
+
+
+function extractId(decodedText) {
+  let id = String(decodedText || "").trim();
+
+  // Mendukung QR: "ID: 12345" atau "ID: 12345 | Nama: ..."
+  const match = id.match(/\bID\s*:\s*([^|\s]+)/i);
+  if (match) {
+    id = match[1].trim();
+  }
+
+  return id;
+}
+
+
+function validateSetup() {
+  if (!API_URL || API_URL.indexOf("GANTI_DENGAN") === 0) {
+    show("❌ URL Apps Script belum diisi di <b>index.html</b>.", "error");
+    return false;
+  }
+
+  if (!/^https:\/\//i.test(API_URL)) {
+    show("❌ URL backend harus menggunakan HTTPS.", "error");
+    return false;
+  }
+
+  return true;
+}
+
+
+function submitCheckIn(id, pin) {
+  const requestId = makeRequestId();
+  const frame = document.getElementById("postFrame");
+
+  // POST melalui form + iframe sengaja dipakai agar tidak membutuhkan CORS.
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = API_URL;
+  form.target = frame.name;
+  form.style.display = "none";
+
+  addHidden(form, "requestId", requestId);
+  addHidden(form, "id", id);
+  addHidden(form, "pin", pin);
+
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
+
+  pollResult(requestId);
+}
+
+
+function addHidden(form, name, value) {
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  input.value = value;
+  form.appendChild(input);
+}
+
+
+function pollResult(requestId) {
+  const callbackName = "scannerCallback_" + requestId.slice(0, 24);
+  let finished = false;
+  let attempts = 0;
+  const maxAttempts = 40;
+
+  window[callbackName] = function(data) {
+    if (finished) return;
+
+    if (data && data.pending) {
+      return;
+    }
+
+    finished = true;
+    cleanup();
+    handleCheckInResult(data);
+  };
+
+  function cleanup() {
+    const old = document.getElementById("jsonp_" + requestId);
+    if (old) old.remove();
+    try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+  }
+
+  function request() {
+    if (finished) return;
+
+    attempts++;
+    if (attempts > maxAttempts) {
+      finished = true;
+      cleanup();
+      show("❌ Server tidak memberikan jawaban dalam waktu yang ditentukan.", "error");
+      processing = false;
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "jsonp_" + requestId;
+    script.async = true;
+    script.src = API_URL
+      + "?api=result"
+      + "&requestId=" + encodeURIComponent(requestId)
+      + "&callback=" + encodeURIComponent(callbackName)
+      + "&_=" + Date.now();
+
+    script.onerror = function() {
+      script.remove();
+      setTimeout(request, 350);
+    };
+
+    document.head.appendChild(script);
+    setTimeout(function() {
+      if (script.parentNode) script.remove();
+      if (!finished) setTimeout(request, 250);
+    }, 700);
+  }
+
+  request();
+}
+
+
+function handleCheckInResult(data) {
+  if (!data) {
+    show("❌ Server tidak memberikan jawaban.", "error");
+    processing = false;
+    return;
+  }
+
+  if (!data.success) {
+    show(
+      "❌ <b>Check-in gagal</b><br><br>" + esc(data.message || "Tidak diketahui"),
+      "error"
+    );
+  } else if (data.already) {
+    show(
+      "ℹ️ <b>Sudah Check-in</b><br><br>" +
+      "ID Peserta: <b>" + esc(data.id || "") + "</b><br><br>" +
+      "Peserta sudah check-in sebelumnya.",
+      "info"
+    );
+  } else {
+    show(
+      "✅ <b>CHECK-IN BERHASIL</b><br><br>" +
+      "ID Peserta: <b>" + esc(data.id || "") + "</b><br>" +
+      "Waktu: <b>" + esc(data.jam || "") + "</b>",
+      "success"
+    );
+
+    // Beep sederhana setelah berhasil.
+    beep();
+
+    if (navigator.vibrate) {
+      navigator.vibrate(120);
+    }
+  }
+
+  setTimeout(function() {
+    processing = false;
+    show("📷 Silakan scan QR peserta berikutnya.", "info");
+  }, 1800);
+}
+
+
+function beep() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+
+    const ctx = new AudioContext();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    oscillator.frequency.value = 880;
+    gain.gain.value = 0.05;
+
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.12);
+  } catch (_) {}
+}
+
+
+async function onScanSuccess(decodedText) {
+  if (processing) return;
+
+  const pin = pinInput.value.trim();
+  if (!pin) {
+    show("❌ Masukkan PIN panitia terlebih dahulu.", "error");
+    return;
+  }
+
+  const id = extractId(decodedText);
+  if (!id) {
+    show("❌ ID peserta tidak ditemukan dari QR.", "error");
+    return;
+  }
+
+  processing = true;
+
+  show(
+    "🔍 <b>QR terdeteksi</b><br><br>" +
+    "ID: <b>" + esc(id) + "</b><br><br>Memproses check-in...",
+    "info"
+  );
+
+  submitCheckIn(id, pin);
+}
+
+
+async function startScanner() {
+  if (!validateSetup()) return;
+  if (running) return;
+
+  show("📷 Meminta izin kamera...", "info");
+
+  try {
+    scanner = new Html5Qrcode("reader");
+
+    // facingMode environment = kamera belakang.
+    await scanner.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.68);
+          return { width: size, height: size };
+        },
+        aspectRatio: 1.333334
+      },
+      onScanSuccess,
+      function(_) {}
+    );
+
+    running = true;
+    show("📷 Kamera aktif. Arahkan ke QR peserta.", "info");
+
+  } catch (err) {
+    running = false;
+    scanner = null;
+
+    show(
+      "❌ <b>Kamera tidak dapat digunakan.</b><br><br>" +
+      esc(err && err.message ? err.message : String(err)) +
+      "<br><br>Pastikan halaman ini dibuka melalui HTTPS dan izin kamera browser sudah diizinkan.",
+      "error"
+    );
+  }
+}
+
+
+async function stopScanner() {
+  if (!scanner) return;
+
+  try {
+    await scanner.stop();
+    scanner.clear();
+  } catch (_) {}
+
+  scanner = null;
+  running = false;
+  processing = false;
+  show("⏹ Kamera dihentikan.", "info");
+}
+
+
+startBtn.addEventListener("click", startScanner);
+stopBtn.addEventListener("click", stopScanner);
+
+// Enter pada PIN tidak otomatis membuka kamera.
+pinInput.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") startScanner();
+});
+</script>
+</body>
+</html>
