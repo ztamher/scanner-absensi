@@ -272,163 +272,142 @@ function addHidden(form, name, value) {
 
 
 function pollResult(requestId) {
-const callbackName =
-"scannerCallback_" +
-requestId.slice(0, 24);
-let finished = false;
-let attempts = 0;
-// Maksimal sekitar 30 detik
-const maxAttempts = 30;
-window[callbackName] = function(data) {
-if (finished) return;
 
-/*
- * Jika server belum selesai,
- * tunggu polling berikutnya.
- */
-if (data && data.pending) {
-  return;
-}
+  const callbackName =
+    "scannerCallback_" + requestId.slice(0, 24);
 
-finished = true;
+  let finished = false;
+  let attempts = 0;
 
-cleanup();
+  // Maksimal 60 kali pengecekan
+  const maxAttempts = 60;
 
-handleCheckInResult(data);
-};
-function cleanup() {
-const oldScripts =
-  document.querySelectorAll(
-    'script[data-request-id="' +
-    requestId +
-    '"]'
-  );
+  window[callbackName] = function(data) {
 
-oldScripts.forEach(function(script) {
-  script.remove();
-});
+    if (finished) return;
+
+    console.log("Hasil polling:", data);
+
+    // Kalau masih diproses, jangan dianggap error
+    if (data && data.pending) {
+      setTimeout(request, 1000);
+      return;
+    }
+
+    // Kalau sudah ada hasil
+    finished = true;
+
+    cleanup();
+
+    handleCheckInResult(data);
+  };
 
 
-try {
-  delete window[callbackName];
-} catch (_) {
-  window[callbackName] = undefined;
-}
-}
-function request() {
-if (finished) return;
+  function cleanup() {
 
-
-attempts++;
-
-
-/*
- * Timeout total
- */
-if (attempts > maxAttempts) {
-
-  finished = true;
-
-  cleanup();
-
-  processing = false;
-
-  show(
-    "❌ <b>Server tidak memberikan jawaban.</b><br><br>" +
-    "Waktu tunggu telah habis.<br><br>" +
-    "Namun jika data sudah masuk ke Google Sheet, " +
-    "check-in sebenarnya berhasil diproses.",
-    "error"
-  );
-
-  return;
-}
-
-
-const script =
-  document.createElement("script");
-
-
-/*
- * Tandai script supaya bisa dibersihkan
- */
-script.dataset.requestId =
-  requestId;
-
-
-script.async = true;
-
-
-script.src =
-  API_URL +
-  "?api=result" +
-  "&requestId=" +
-  encodeURIComponent(requestId) +
-  "&callback=" +
-  encodeURIComponent(callbackName) +
-  "&_=" +
-  Date.now();
-
-
-/*
- * Jangan langsung menganggap error.
- *
- * Google Apps Script kadang membutuhkan
- * waktu beberapa detik.
- */
-script.onerror = function() {
-
-  script.remove();
-
-  if (!finished) {
-
-    setTimeout(
-      request,
-      1000
+    const scripts = document.querySelectorAll(
+      'script[data-request-id="' + requestId + '"]'
     );
 
-  }
+    scripts.forEach(function(script) {
+      script.remove();
+    });
 
-};
-
-
-document.head.appendChild(script);
-
-
-/*
- * Berikan waktu 5 detik kepada
- * Apps Script untuk memberikan respons.
- *
- * Ini yang berbeda dari kode lama:
- * sebelumnya hanya 700 ms.
- */
-setTimeout(function() {
-
-  if (finished) return;
-
-
-  /*
-   * Jika script masih ada dan belum
-   * memberikan callback, hapus lalu
-   * lakukan polling berikutnya.
-   */
-  if (script.parentNode) {
-    script.remove();
+    try {
+      delete window[callbackName];
+    } catch (_) {
+      window[callbackName] = undefined;
+    }
   }
 
 
-  if (!finished) {
+  function request() {
 
-    setTimeout(
-      request,
-      500
+    if (finished) return;
+
+    attempts++;
+
+    console.log(
+      "Polling hasil check-in:",
+      attempts,
+      "/",
+      maxAttempts
     );
 
+
+    // Timeout total
+    if (attempts > maxAttempts) {
+
+      finished = true;
+
+      cleanup();
+
+      processing = false;
+
+      show(
+        "❌ <b>Server tidak memberikan jawaban.</b><br><br>" +
+        "Silakan cek Google Sheet. Jika data sudah tercatat, " +
+        "check-in sebenarnya berhasil.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const script = document.createElement("script");
+
+    script.dataset.requestId = requestId;
+
+    script.async = true;
+
+    script.src =
+      API_URL +
+      "?api=result" +
+      "&requestId=" +
+      encodeURIComponent(requestId) +
+      "&callback=" +
+      encodeURIComponent(callbackName) +
+      "&_=" +
+      Date.now();
+
+
+    script.onerror = function() {
+
+      console.log("Polling error");
+
+      script.remove();
+
+      if (!finished) {
+        setTimeout(request, 1000);
+      }
+    };
+
+
+    document.head.appendChild(script);
+
+
+    /*
+     * Berikan waktu maksimal 10 detik
+     * untuk mendapatkan respons.
+     */
+    setTimeout(function() {
+
+      if (finished) return;
+
+      if (script.parentNode) {
+        script.remove();
+      }
+
+      if (!finished) {
+        setTimeout(request, 1000);
+      }
+
+    }, 10000);
   }
 
-}, 5000);
-}
-request();
+
+  request();
 }
 
 
