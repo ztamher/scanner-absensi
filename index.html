@@ -3,373 +3,368 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,viewport-fit=cover"
-  >
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
 
-  <meta
-    name="theme-color"
-    content="#111827"
-  >
+<meta
+  name="theme-color"
+  content="#111827"
+>
 
-  <title>Scanner Absensi Panitia</title>
+<title>Scanner Absensi Panitia</title>
 
 
-  <!-- QR SCANNER -->
-  <script
-    src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
-  </script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 
-  <style>
+<style>
 
-    * {
-      box-sizing: border-box;
-    }
+* {
+  box-sizing: border-box;
+}
 
+body {
 
-    body {
+  margin: 0;
 
-      margin: 0;
+  min-height: 100vh;
 
-      min-height: 100vh;
+  background: #f3f4f6;
 
-      background: #f3f4f6;
+  color: #111827;
 
-      color: #111827;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
 
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-    }
 
+.wrap {
 
-    .wrap {
+  width: min(100%, 520px);
 
-      width: min(100%, 520px);
+  margin: auto;
 
-      margin: 0 auto;
+  padding: 18px 14px 30px;
+}
 
-      padding: 18px 14px 30px;
-    }
 
+.card {
 
-    .card {
+  background: white;
 
-      background: #fff;
+  border-radius: 20px;
 
-      border-radius: 20px;
+  padding: 18px;
 
-      padding: 18px;
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.08);
+}
 
-      box-shadow:
-        0 8px 30px rgba(0,0,0,.08);
-    }
 
+h1 {
 
-    h1 {
+  margin: 0 0 6px;
 
-      margin: 0 0 6px;
+  font-size: 24px;
+}
 
-      font-size: 24px;
-    }
 
+.subtitle {
 
-    .subtitle {
+  margin: 0 0 16px;
 
-      margin: 0 0 16px;
+  color: #6b7280;
 
-      color: #6b7280;
+  font-size: 14px;
 
-      font-size: 14px;
+  line-height: 1.5;
+}
 
-      line-height: 1.5;
-    }
 
+label {
 
-    label {
+  display: block;
 
-      display: block;
+  margin-bottom: 7px;
 
-      margin: 0 0 7px;
+  font-size: 13px;
 
-      font-size: 13px;
+  font-weight: 700;
+}
 
-      font-weight: 700;
-    }
 
+input {
 
-    input {
+  width: 100%;
 
-      width: 100%;
+  height: 48px;
 
-      height: 48px;
+  border:
+    1px solid #d1d5db;
 
-      border:
-        1px solid #d1d5db;
+  border-radius: 12px;
 
-      border-radius: 12px;
+  padding: 0 13px;
 
-      padding: 0 13px;
+  font-size: 16px;
 
-      font-size: 16px;
+  outline: none;
+}
 
-      outline: none;
-    }
 
+input:focus {
 
-    input:focus {
+  border-color: #111827;
+}
 
-      border-color: #111827;
-    }
 
+.buttons {
 
-    .buttons {
+  display: grid;
 
-      display: grid;
+  grid-template-columns:
+    1fr 1fr;
 
-      grid-template-columns:
-        1fr 1fr;
+  gap: 9px;
 
-      gap: 9px;
+  margin-top: 10px;
+}
 
-      margin-top: 10px;
-    }
 
+button {
 
-    button {
+  border: 0;
 
-      border: 0;
+  border-radius: 12px;
 
-      border-radius: 12px;
+  height: 46px;
 
-      height: 46px;
+  padding: 0 12px;
 
-      padding: 0 12px;
+  font-size: 15px;
 
-      font-size: 15px;
+  font-weight: 700;
 
-      font-weight: 700;
+  cursor: pointer;
+}
 
-      cursor: pointer;
-    }
 
+#startBtn {
 
-    #startBtn {
+  background: #111827;
 
-      background: #111827;
+  color: white;
+}
 
-      color: white;
-    }
 
+#stopBtn {
 
-    #stopBtn {
+  background: #e5e7eb;
 
-      background: #e5e7eb;
+  color: #111827;
+}
 
-      color: #111827;
-    }
 
+#reader {
 
-    button:disabled {
+  margin-top: 14px;
 
-      opacity: .5;
+  width: 100%;
 
-      cursor: not-allowed;
-    }
+  overflow: hidden;
 
+  border-radius: 16px;
 
-    #reader {
+  background: #111;
 
-      margin-top: 14px;
+  min-height: 90px;
+}
 
-      width: 100%;
 
-      overflow: hidden;
+#result {
 
-      border-radius: 16px;
+  margin-top: 14px;
 
-      background: #111;
+  border-radius: 14px;
 
-      min-height: 90px;
-    }
+  padding: 15px;
 
+  line-height: 1.55;
 
-    #result {
+  font-size: 15px;
 
-      margin-top: 14px;
+  background: #f3f4f6;
+}
 
-      border-radius: 14px;
 
-      padding: 15px;
+#result.success {
 
-      line-height: 1.55;
+  background: #dcfce7;
 
-      font-size: 15px;
+  color: #166534;
+}
 
-      background: #f3f4f6;
-    }
 
+#result.error {
 
-    #result.success {
+  background: #fee2e2;
 
-      background: #dcfce7;
+  color: #991b1b;
+}
 
-      color: #166534;
-    }
 
+#result.info {
 
-    #result.error {
+  background: #e0f2fe;
 
-      background: #fee2e2;
+  color: #075985;
+}
 
-      color: #991b1b;
-    }
 
+.small {
 
-    #result.info {
+  margin-top: 12px;
 
-      background: #e0f2fe;
+  color: #6b7280;
 
-      color: #075985;
-    }
+  font-size: 12px;
 
+  line-height: 1.5;
+}
 
-    #result.warn {
 
-      background: #fef3c7;
+/*
+ * Iframe POST tersembunyi.
+ */
 
-      color: #92400e;
-    }
+.hiddenFrame {
 
+  position: fixed;
 
-    .small {
+  width: 1px;
 
-      margin-top: 12px;
+  height: 1px;
 
-      color: #6b7280;
+  border: 0;
 
-      font-size: 12px;
+  opacity: 0;
 
-      line-height: 1.5;
-    }
+  pointer-events: none;
 
+  left: -10px;
 
-    .hiddenFrame {
+  top: -10px;
+}
 
-      position: fixed;
-
-      width: 1px;
-
-      height: 1px;
-
-      border: 0;
-
-      opacity: 0;
-
-      pointer-events: none;
-
-      left: -10px;
-
-      top: -10px;
-    }
-
-  </style>
+</style>
 
 </head>
 
 
 <body>
 
-  <main class="wrap">
 
-    <section class="card">
+<main class="wrap">
 
-      <h1>📷 Scanner Absensi</h1>
-
-      <p class="subtitle">
-        Masukkan PIN panitia, nyalakan kamera,
-        lalu arahkan kamera ke QR peserta.
-      </p>
+<section class="card">
 
 
-      <label for="pin">
-        PIN Panitia
-      </label>
+<h1>
+📷 Scanner Absensi
+</h1>
 
 
-      <input
-        id="pin"
-        type="password"
-        inputmode="text"
-        autocomplete="off"
-        placeholder="Masukkan PIN panitia"
-      >
+<p class="subtitle">
+
+Masukkan PIN panitia,
+nyalakan kamera,
+lalu arahkan kamera ke QR peserta.
+
+</p>
 
 
-      <div class="buttons">
-
-        <button
-          id="startBtn"
-          type="button"
-        >
-          📷 Mulai Kamera
-        </button>
+<label for="pin">
+PIN Panitia
+</label>
 
 
-        <button
-          id="stopBtn"
-          type="button"
-        >
-          ⏹ Stop Kamera
-        </button>
-
-      </div>
-
-
-      <div id="reader"></div>
+<input
+  id="pin"
+  type="password"
+  inputmode="text"
+  autocomplete="off"
+  placeholder="Masukkan PIN panitia"
+>
 
 
-      <div
-        id="result"
-        class="info"
-      >
-        Siap. Tekan
-        <b>Mulai Kamera</b>
-        untuk memulai.
-      </div>
+<div class="buttons">
 
 
-      <p class="small">
-
-        Jika kamera tidak dapat dibuka,
-        pastikan halaman menggunakan HTTPS
-        dan izin kamera browser sudah diberikan.
-
-      </p>
-
-    </section>
-
-  </main>
+<button
+  id="startBtn"
+  type="button"
+>
+📷 Mulai Kamera
+</button>
 
 
-  <!--
-    Iframe untuk POST.
-    Respons POST tidak dibaca secara langsung.
-  -->
-  <iframe
-    id="postFrame"
-    name="postFrame"
-    class="hiddenFrame"
-    title="background"
-  ></iframe>
+<button
+  id="stopBtn"
+  type="button"
+>
+⏹ Stop Kamera
+</button>
+
+
+</div>
+
+
+<div id="reader"></div>
+
+
+<div
+  id="result"
+  class="info"
+>
+
+Siap.
+Tekan <b>Mulai Kamera</b>
+untuk memulai.
+
+</div>
+
+
+<p class="small">
+
+Pastikan halaman dibuka melalui HTTPS
+dan izin kamera browser sudah diberikan.
+
+</p>
+
+
+</section>
+
+</main>
+
+
+<!--
+  POST dikirim ke iframe ini.
+-->
+<iframe
+  id="postFrame"
+  name="postFrame"
+  class="hiddenFrame"
+  title="background"
+></iframe>
 
 
 <script>
@@ -390,11 +385,14 @@ const API_URL =
 const pinInput =
   document.getElementById("pin");
 
+
 const resultBox =
   document.getElementById("result");
 
+
 const startBtn =
   document.getElementById("startBtn");
+
 
 const stopBtn =
   document.getElementById("stopBtn");
@@ -424,7 +422,7 @@ function show(message, type = "info") {
 
 
 /* =========================================================
- * ESCAPE HTML
+ * ESCAPE
  * ========================================================= */
 
 function esc(text) {
@@ -444,59 +442,19 @@ function esc(text) {
 
 
 /* =========================================================
- * REQUEST ID
- * ========================================================= */
-
-function makeRequestId() {
-
-  if (
-    window.crypto &&
-    crypto.randomUUID
-  ) {
-
-    return crypto
-      .randomUUID()
-      .replace(
-        /[^A-Za-z0-9_-]/g,
-        ""
-      );
-  }
-
-
-  return (
-    Date.now().toString(36) +
-    Math.random()
-      .toString(36)
-      .slice(2) +
-    Date.now().toString(36)
-  )
-    .replace(
-      /[^A-Za-z0-9_-]/g,
-      ""
-    )
-    .slice(0, 80);
-}
-
-
-/* =========================================================
- * EXTRACT ID DARI QR
+ * EXTRACT ID
  * ========================================================= */
 
 function extractId(decodedText) {
 
   let id =
-    String(decodedText || "")
-      .trim();
+    String(decodedText || "").trim();
 
 
   /*
-   * Format:
+   * Contoh QR:
    *
    * ID:12345 | Nama:Ahmad
-   *
-   * atau:
-   *
-   * ID: 12345
    */
 
   const match =
@@ -517,70 +475,10 @@ function extractId(decodedText) {
 
 
 /* =========================================================
- * VALIDASI
- * ========================================================= */
-
-function validateSetup() {
-
-  if (
-    !API_URL ||
-    API_URL.indexOf("GANTI_DENGAN") === 0
-  ) {
-
-    show(
-      "❌ URL Apps Script belum diisi.",
-      "error"
-    );
-
-    return false;
-  }
-
-
-  if (
-    !/^https:\/\//i.test(API_URL)
-  ) {
-
-    show(
-      "❌ URL backend harus menggunakan HTTPS.",
-      "error"
-    );
-
-    return false;
-  }
-
-
-  return true;
-}
-
-
-/* =========================================================
- * TAMBAH INPUT HIDDEN
- * ========================================================= */
-
-function addHidden(form, name, value) {
-
-  const input =
-    document.createElement("input");
-
-  input.type = "hidden";
-
-  input.name = name;
-
-  input.value = value;
-
-  form.appendChild(input);
-}
-
-
-/* =========================================================
  * KIRIM CHECK-IN
  * ========================================================= */
 
 function submitCheckIn(id, pin) {
-
-  const requestId =
-    makeRequestId();
-
 
   const frame =
     document.getElementById(
@@ -589,32 +487,32 @@ function submitCheckIn(id, pin) {
 
 
   /*
-   * POST melalui form + iframe.
-   *
-   * Dengan cara ini browser tidak perlu
-   * membaca response POST sehingga
-   * tidak terkena CORS.
+   * Buat form POST.
    */
 
   const form =
     document.createElement("form");
 
 
-  form.method = "POST";
-
-  form.action = API_URL;
-
-  form.target = frame.name;
-
-  form.style.display = "none";
+  form.method =
+    "POST";
 
 
-  addHidden(
-    form,
-    "requestId",
-    requestId
-  );
+  form.action =
+    API_URL;
 
+
+  form.target =
+    frame.name;
+
+
+  form.style.display =
+    "none";
+
+
+  /*
+   * ID.
+   */
 
   addHidden(
     form,
@@ -623,6 +521,10 @@ function submitCheckIn(id, pin) {
   );
 
 
+  /*
+   * PIN.
+   */
+
   addHidden(
     form,
     "pin",
@@ -630,8 +532,14 @@ function submitCheckIn(id, pin) {
   );
 
 
-  document.body.appendChild(form);
+  document.body.appendChild(
+    form
+  );
 
+
+  /*
+   * Kirim.
+   */
 
   form.submit();
 
@@ -639,228 +547,94 @@ function submitCheckIn(id, pin) {
   form.remove();
 
 
-  /*
-   * Setelah POST dikirim,
-   * tunggu hasil melalui JSONP.
-   */
-
-  pollResult(requestId);
+  console.log(
+    "Check-in dikirim:",
+    id
+  );
 }
 
 
 /* =========================================================
- * POLLING RESULT
+ * TAMBAH INPUT
  * ========================================================= */
 
-function pollResult(requestId) {
+function addHidden(
+  form,
+  name,
+  value
+) {
 
-  const callbackName =
-    "scannerCallback_" +
-    requestId.slice(0, 24);
-
-
-  let finished = false;
-
-  let attempts = 0;
+  const input =
+    document.createElement("input");
 
 
-  /*
-   * 30 kali x 1 detik = 30 detik.
-   */
-
-  const maxAttempts = 30;
+  input.type =
+    "hidden";
 
 
-  /*
-   * Callback JSONP.
-   */
-
-  window[callbackName] =
-    function(data) {
-
-      if (finished) {
-        return;
-      }
+  input.name =
+    name;
 
 
-      console.log(
-        "Hasil server:",
-        data
-      );
+  input.value =
+    value;
 
 
-      /*
-       * Server belum selesai.
-       */
-
-      if (
-        data &&
-        data.pending
-      ) {
-
-        return;
-      }
+  form.appendChild(
+    input
+  );
+}
 
 
-      /*
-       * Server sudah memberikan hasil.
-       */
+/* =========================================================
+ * TERIMA HASIL DARI APPS SCRIPT
+ *
+ * Apps Script memanggil:
+ *
+ * window.parent.postMessage(...)
+ * ========================================================= */
 
-      finished = true;
-
-
-      cleanup();
-
-
-      handleCheckInResult(data);
-    };
-
-
-  /* -------------------------------------------------------
-   * CLEANUP
-   * ------------------------------------------------------- */
-
-  function cleanup() {
-
-    document
-      .querySelectorAll(
-        'script[data-request-id="' +
-        requestId +
-        '"]'
-      )
-      .forEach(
-        script => script.remove()
-      );
-
-
-    try {
-
-      delete window[callbackName];
-
-    } catch (_) {
-
-      window[callbackName] =
-        undefined;
-    }
-  }
-
-
-  /* -------------------------------------------------------
-   * REQUEST
-   * ------------------------------------------------------- */
-
-  function request() {
-
-    if (finished) {
-      return;
-    }
-
-
-    attempts++;
-
+window.addEventListener(
+  "message",
+  function(event) {
 
     console.log(
-      "Polling:",
-      attempts,
-      "/",
-      maxAttempts
+      "Pesan dari backend:",
+      event.data
     );
 
 
+    const message =
+      event.data;
+
+
     /*
-     * Timeout.
+     * Pastikan ini hasil check-in.
      */
 
     if (
-      attempts > maxAttempts
+      !message ||
+      message.type !==
+        "CHECKIN_RESULT"
     ) {
-
-      finished = true;
-
-      cleanup();
-
-      processing = false;
-
-
-      show(
-        "❌ <b>Server tidak merespons.</b><br><br>" +
-
-        "Periksa Google Sheet. " +
-
-        "Jika data sudah masuk, " +
-
-        "jangan scan ulang ID tersebut.",
-        "error"
-      );
-
 
       return;
     }
 
 
-    /*
-     * Buat script JSONP.
-     */
-
-    const script =
-      document.createElement("script");
+    const data =
+      message.data;
 
 
-    script.dataset.requestId =
-      requestId;
+    processing =
+      false;
 
 
-    script.async = true;
-
-
-    script.src =
-      API_URL +
-      "?api=result" +
-      "&requestId=" +
-      encodeURIComponent(
-        requestId
-      ) +
-      "&callback=" +
-      encodeURIComponent(
-        callbackName
-      ) +
-      "&_=" +
-      Date.now();
-
-
-    /*
-     * Jika request gagal,
-     * coba lagi setelah 1 detik.
-     */
-
-    script.onerror =
-      function() {
-
-        script.remove();
-
-
-        if (!finished) {
-
-          setTimeout(
-            request,
-            1000
-          );
-        }
-      };
-
-
-    document.head.appendChild(
-      script
+    handleCheckInResult(
+      data
     );
   }
-
-
-  /*
-   * Mulai polling.
-   */
-
-  request();
-}
+);
 
 
 /* =========================================================
@@ -872,11 +646,9 @@ function handleCheckInResult(data) {
   if (!data) {
 
     show(
-      "❌ Server tidak memberikan jawaban.",
+      "❌ Server tidak memberikan hasil.",
       "error"
     );
-
-    processing = false;
 
     return;
   }
@@ -900,9 +672,6 @@ function handleCheckInResult(data) {
       "error"
     );
 
-
-    processing = false;
-
     return;
   }
 
@@ -918,7 +687,11 @@ function handleCheckInResult(data) {
       "ℹ️ <b>Sudah Check-in</b><br><br>" +
 
       "ID Peserta: <b>" +
-      esc(data.id || "") +
+
+      esc(
+        data.id || ""
+      ) +
+
       "</b><br><br>" +
 
       "Peserta sudah check-in sebelumnya.",
@@ -927,7 +700,11 @@ function handleCheckInResult(data) {
     );
 
 
-    selesaiSebentar();
+    setTimeout(
+      resetAfterScan,
+      1500
+    );
+
 
     return;
   }
@@ -942,11 +719,19 @@ function handleCheckInResult(data) {
     "✅ <b>CHECK-IN BERHASIL</b><br><br>" +
 
     "ID Peserta: <b>" +
-    esc(data.id || "") +
+
+    esc(
+      data.id || ""
+    ) +
+
     "</b><br>" +
 
     "Waktu: <b>" +
-    esc(data.jam || "") +
+
+    esc(
+      data.jam || ""
+    ) +
+
     "</b>",
 
     "success"
@@ -962,29 +747,25 @@ function handleCheckInResult(data) {
   }
 
 
-  selesaiSebentar();
+  setTimeout(
+    resetAfterScan,
+    1500
+  );
 }
 
 
 /* =========================================================
- * SETELAH HASIL
+ * RESET
  * ========================================================= */
 
-function selesaiSebentar() {
+function resetAfterScan() {
 
-  setTimeout(
-    function() {
-
-      processing = false;
+  processing = false;
 
 
-      show(
-        "📷 Silakan scan QR peserta berikutnya.",
-        "info"
-      );
-
-    },
-    1500
+  show(
+    "📷 Silakan scan QR peserta berikutnya.",
+    "info"
   );
 }
 
@@ -1041,7 +822,6 @@ function beep() {
       ctx.currentTime + 0.12
     );
 
-
   } catch (_) {}
 }
 
@@ -1053,8 +833,8 @@ function beep() {
 function onScanSuccess(decodedText) {
 
   /*
-   * Abaikan scan baru ketika
-   * scan sebelumnya masih diproses.
+   * Jangan proses scan kedua
+   * sebelum scan pertama selesai.
    */
 
   if (processing) {
@@ -1100,7 +880,9 @@ function onScanSuccess(decodedText) {
     "📷 <b>QR terdeteksi</b><br><br>" +
 
     "ID: <b>" +
+
     esc(id) +
+
     "</b><br><br>" +
 
     "Memproses check-in...",
@@ -1117,15 +899,10 @@ function onScanSuccess(decodedText) {
 
 
 /* =========================================================
- * MULAI SCANNER
+ * MULAI KAMERA
  * ========================================================= */
 
 async function startScanner() {
-
-  if (!validateSetup()) {
-    return;
-  }
-
 
   if (running) {
     return;
@@ -1166,10 +943,12 @@ async function startScanner() {
     await scanner.start(
 
       {
-        facingMode: "environment"
+        facingMode:
+          "environment"
       },
 
       {
+
         fps: 10,
 
         qrbox:
@@ -1216,9 +995,9 @@ async function startScanner() {
 
   } catch (err) {
 
-    running = false;
-
     scanner = null;
+
+    running = false;
 
 
     show(
@@ -1230,13 +1009,7 @@ async function startScanner() {
         err.message
           ? err.message
           : String(err)
-      ) +
-
-      "<br><br>" +
-
-      "Pastikan halaman dibuka melalui HTTPS " +
-
-      "dan izin kamera browser sudah diberikan.",
+      ),
 
       "error"
     );
@@ -1245,7 +1018,7 @@ async function startScanner() {
 
 
 /* =========================================================
- * STOP SCANNER
+ * STOP KAMERA
  * ========================================================= */
 
 async function stopScanner() {
@@ -1279,7 +1052,7 @@ async function stopScanner() {
 
 
 /* =========================================================
- * EVENT
+ * BUTTON
  * ========================================================= */
 
 startBtn.addEventListener(
@@ -1294,10 +1067,9 @@ stopBtn.addEventListener(
 );
 
 
-/*
- * Tekan Enter pada PIN
- * untuk membuka kamera.
- */
+/* =========================================================
+ * ENTER PIN
+ * ========================================================= */
 
 pinInput.addEventListener(
   "keydown",
@@ -1313,4 +1085,5 @@ pinInput.addEventListener(
 </script>
 
 </body>
+
 </html>
