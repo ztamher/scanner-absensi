@@ -15,7 +15,7 @@
   content="#111827"
 >
 
-<title>Scanner Absensi Panitia</title>
+<title>Scanner Absensi</title>
 
 
 <script
@@ -230,7 +230,6 @@ button {
   color: #075985;
 }
 
-
 </style>
 
 </head>
@@ -252,7 +251,7 @@ button {
 <p class="subtitle">
 
 Masukkan PIN panitia,
-kemudian scan QR peserta.
+kemudian scan QR <b>Peserta atau Panitia</b>.
 
 </p>
 
@@ -299,6 +298,7 @@ PIN Panitia
 >
 
 Siap.
+
 Tekan <b>Mulai Kamera</b>.
 
 </div>
@@ -325,27 +325,19 @@ const API_URL =
  * ========================================================= */
 
 const pinInput =
-  document.getElementById(
-    "pin"
-  );
+  document.getElementById("pin");
 
 
 const resultBox =
-  document.getElementById(
-    "result"
-  );
+  document.getElementById("result");
 
 
 const startBtn =
-  document.getElementById(
-    "startBtn"
-  );
+  document.getElementById("startBtn");
 
 
 const stopBtn =
-  document.getElementById(
-    "stopBtn"
-  );
+  document.getElementById("stopBtn");
 
 
 /* =========================================================
@@ -368,11 +360,10 @@ function show(
   type = "info"
 ) {
 
-  resultBox.className =
-    type;
+  resultBox.className = type;
 
-  resultBox.innerHTML =
-    message;
+  resultBox.innerHTML = message;
+
 }
 
 
@@ -384,30 +375,16 @@ function esc(text) {
 
   return String(text)
 
-    .replace(
-      /&/g,
-      "&amp;"
-    )
+    .replace(/&/g, "&amp;")
 
-    .replace(
-      /</g,
-      "&lt;"
-    )
+    .replace(/</g, "&lt;")
 
-    .replace(
-      />/g,
-      "&gt;"
-    )
+    .replace(/>/g, "&gt;")
 
-    .replace(
-      /"/g,
-      "&quot;"
-    )
+    .replace(/"/g, "&quot;")
 
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+    .replace(/'/g, "&#039;");
+
 }
 
 
@@ -415,14 +392,10 @@ function esc(text) {
  * AMBIL ID DARI QR
  * ========================================================= */
 
-function extractId(
-  decodedText
-) {
+function extractId(decodedText) {
 
   let id =
-    String(
-      decodedText || ""
-    ).trim();
+    String(decodedText || "").trim();
 
 
   /*
@@ -443,15 +416,17 @@ function extractId(
 
     id =
       match[1].trim();
+
   }
 
 
   return id;
+
 }
 
 
 /* =========================================================
- * REQUEST ID CALLBACK
+ * CALLBACK JSONP
  * ========================================================= */
 
 function makeCallbackName() {
@@ -464,6 +439,7 @@ function makeCallbackName() {
       Math.random() * 100000
     )
   );
+
 }
 
 
@@ -483,10 +459,6 @@ function submitCheckIn(
   let finished = false;
 
 
-  /*
-   * Callback global.
-   */
-
   window[callbackName] =
     function(data) {
 
@@ -504,9 +476,8 @@ function submitCheckIn(
       );
 
 
-      /*
-       * Bersihkan callback.
-       */
+      clearTimeout(timeout);
+
 
       try {
 
@@ -519,22 +490,19 @@ function submitCheckIn(
         window[
           callbackName
         ] = undefined;
+
       }
 
 
-      /*
-       * Tampilkan hasil.
-       */
+      script.remove();
+
 
       handleCheckInResult(
         data
       );
+
     };
 
-
-  /*
-   * Buat script JSONP.
-   */
 
   const script =
     document.createElement(
@@ -560,10 +528,6 @@ function submitCheckIn(
     Date.now();
 
 
-  /*
-   * Jika request gagal.
-   */
-
   script.onerror =
     function() {
 
@@ -575,18 +539,16 @@ function submitCheckIn(
       finished = true;
 
 
+      clearTimeout(timeout);
+
+
       try {
 
         delete window[
           callbackName
         ];
 
-      } catch (_) {
-
-        window[
-          callbackName
-        ] = undefined;
-      }
+      } catch (_) {}
 
 
       script.remove();
@@ -604,14 +566,11 @@ function submitCheckIn(
         "dan deployment.",
 
         "error"
+
       );
+
     };
 
-
-  /*
-   * Jika terlalu lama,
-   * anggap timeout.
-   */
 
   const timeout =
     setTimeout(
@@ -647,42 +606,24 @@ function submitCheckIn(
           "Cek deployment Apps Script.",
 
           "error"
+
         );
 
       },
+
       15000
     );
-
-
-  /*
-   * Jika callback berhasil,
-   * batalkan timeout.
-   */
-
-  const original =
-    window[callbackName];
-
-
-  window[callbackName] =
-    function(data) {
-
-      clearTimeout(
-        timeout
-      );
-
-
-      original(data);
-    };
 
 
   document.head.appendChild(
     script
   );
+
 }
 
 
 /* =========================================================
- * HASIL
+ * HASIL CHECK-IN
  * ========================================================= */
 
 function handleCheckInResult(
@@ -700,18 +641,19 @@ function handleCheckInResult(
     );
 
     return;
+
   }
 
 
-  /*
+  /* -------------------------------------------------------
    * GAGAL
-   */
+   * ------------------------------------------------------- */
 
   if (!data.success) {
 
     show(
 
-      "❌ <b>Check-in gagal</b><br><br>" +
+      "❌ <b>CHECK-IN GAGAL</b><br><br>" +
 
       esc(
         data.message ||
@@ -719,21 +661,39 @@ function handleCheckInResult(
       ),
 
       "error"
+
     );
 
     return;
+
   }
 
 
-  /*
+  /* -------------------------------------------------------
    * SUDAH HADIR
-   */
+   * ------------------------------------------------------- */
 
   if (data.already) {
 
     show(
 
-      "ℹ️ <b>Sudah Check-in</b><br><br>" +
+      "ℹ️ <b>SUDAH CHECK-IN</b><br><br>" +
+
+      "Nama: <b>" +
+
+      esc(
+        data.nama || "-"
+      ) +
+
+      "</b><br>" +
+
+      "Kategori: <b>" +
+
+      esc(
+        data.type || "-"
+      ) +
+
+      "</b><br>" +
 
       "ID: <b>" +
 
@@ -743,9 +703,16 @@ function handleCheckInResult(
 
       "</b><br>" +
 
-      "Peserta sudah tercatat hadir.",
+      "Waktu: <b>" +
+
+      esc(
+        data.jam || ""
+      ) +
+
+      "</b>",
 
       "info"
+
     );
 
 
@@ -753,7 +720,7 @@ function handleCheckInResult(
       function() {
 
         show(
-          "📷 Silakan scan peserta berikutnya.",
+          "📷 Silakan scan berikutnya.",
           "info"
         );
 
@@ -763,18 +730,35 @@ function handleCheckInResult(
 
 
     return;
+
   }
 
 
-  /*
+  /* -------------------------------------------------------
    * BERHASIL
-   */
+   * ------------------------------------------------------- */
 
   show(
 
     "✅ <b>CHECK-IN BERHASIL</b><br><br>" +
 
-    "ID Peserta: <b>" +
+    "Nama: <b>" +
+
+    esc(
+      data.nama || "-"
+    ) +
+
+    "</b><br>" +
+
+    "Kategori: <b>" +
+
+    esc(
+      data.type || "-"
+    ) +
+
+    "</b><br>" +
+
+    "ID: <b>" +
 
     esc(
       data.id || ""
@@ -791,6 +775,7 @@ function handleCheckInResult(
     "</b>",
 
     "success"
+
   );
 
 
@@ -804,6 +789,7 @@ function handleCheckInResult(
     navigator.vibrate(
       120
     );
+
   }
 
 
@@ -811,13 +797,14 @@ function handleCheckInResult(
     function() {
 
       show(
-        "📷 Silakan scan peserta berikutnya.",
+        "📷 Silakan scan berikutnya.",
         "info"
       );
 
     },
     1800
   );
+
 }
 
 
@@ -878,6 +865,7 @@ function beep() {
     );
 
   } catch (_) {}
+
 }
 
 
@@ -906,6 +894,7 @@ function onScanSuccess(
     );
 
     return;
+
   }
 
 
@@ -918,11 +907,12 @@ function onScanSuccess(
   if (!id) {
 
     show(
-      "❌ ID peserta tidak ditemukan dari QR.",
+      "❌ ID dari QR tidak ditemukan.",
       "error"
     );
 
     return;
+
   }
 
 
@@ -931,7 +921,7 @@ function onScanSuccess(
 
   show(
 
-    "📷 <b>QR terdeteksi</b><br><br>" +
+    "📷 <b>QR TERDETEKSI</b><br><br>" +
 
     "ID: <b>" +
 
@@ -942,6 +932,7 @@ function onScanSuccess(
     "Memproses check-in...",
 
     "info"
+
   );
 
 
@@ -949,6 +940,7 @@ function onScanSuccess(
     id,
     pin
   );
+
 }
 
 
@@ -977,6 +969,7 @@ async function startScanner() {
     pinInput.focus();
 
     return;
+
   }
 
 
@@ -1013,10 +1006,12 @@ async function startScanner() {
 
             const size =
               Math.floor(
+
                 Math.min(
                   width,
                   height
                 ) * 0.68
+
               );
 
 
@@ -1025,16 +1020,20 @@ async function startScanner() {
               width: size,
 
               height: size
+
             };
+
           },
 
         aspectRatio:
           1.333334
+
       },
 
       onScanSuccess,
 
       function(_) {}
+
     );
 
 
@@ -1042,10 +1041,14 @@ async function startScanner() {
 
 
     show(
-      "📷 Kamera aktif. Arahkan ke QR peserta.",
-      "info"
-    );
 
+      "📷 Kamera aktif.<br><br>" +
+
+      "Arahkan ke QR <b>Peserta atau Panitia</b>.",
+
+      "info"
+
+    );
 
   } catch (err) {
 
@@ -1059,15 +1062,20 @@ async function startScanner() {
       "❌ <b>Kamera tidak dapat digunakan.</b><br><br>" +
 
       esc(
+
         err &&
         err.message
           ? err.message
           : String(err)
+
       ),
 
       "error"
+
     );
+
   }
+
 }
 
 
@@ -1102,6 +1110,7 @@ async function stopScanner() {
     "⏹ Kamera dihentikan.",
     "info"
   );
+
 }
 
 
@@ -1130,7 +1139,9 @@ pinInput.addEventListener(
     ) {
 
       startScanner();
+
     }
+
   }
 );
 
